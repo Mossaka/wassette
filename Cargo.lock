@@ -649,6 +649,7 @@ name = "component2json"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "serde",
  "serde_json",
  "thiserror 2.0.16",
  "tokio",
@@ -4939,6 +4940,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml",
+ "sha2",
  "temp-env",
  "tempfile",
  "test-log",
