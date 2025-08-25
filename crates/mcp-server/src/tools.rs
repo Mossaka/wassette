@@ -80,7 +80,8 @@ pub async fn handle_tools_call(
             let contents = vec![Content::text(error_text)];
 
             let error_result = CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: Some(true),
             };
             Ok(serde_json::to_value(error_result)?)
@@ -106,6 +107,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                 }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -123,6 +125,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                 }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -138,6 +141,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                 }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -158,6 +162,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                 }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -197,6 +202,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -228,6 +234,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -259,6 +266,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -290,6 +298,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -321,6 +330,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -352,6 +362,7 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
         Tool {
@@ -372,13 +383,14 @@ fn get_builtin_tools() -> Vec<Tool> {
                   }))
                 .unwrap_or_default(),
             ),
+            output_schema: None,
             annotations: None,
         },
     ]
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_get_policy(
+pub async fn handle_get_policy(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -390,6 +402,15 @@ async fn handle_get_policy(
         .ok_or_else(|| anyhow::anyhow!("Missing required argument: 'component_id'"))?;
 
     info!("Getting policy for component {}", component_id);
+
+    // First check if the component exists
+    let component_exists = lifecycle_manager
+        .get_component(component_id)
+        .await
+        .is_some();
+    if !component_exists {
+        return Err(anyhow::anyhow!("Component not found: {}", component_id));
+    }
 
     let policy_info = lifecycle_manager.get_policy_info(component_id).await;
 
@@ -415,13 +436,14 @@ async fn handle_get_policy(
     let contents = vec![Content::text(status_text)];
 
     Ok(CallToolResult {
-        content: contents,
+        content: Some(contents),
+        structured_content: None,
         is_error: None,
     })
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_grant_storage_permission(
+pub async fn handle_grant_storage_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -445,7 +467,7 @@ async fn handle_grant_storage_permission(
     match result {
         Ok(()) => {
             let status_text = serde_json::to_string(&json!({
-                "status": "permission granted",
+                "status": "permission granted successfully",
                 "component_id": component_id,
                 "permission_type": "storage",
                 "details": details
@@ -454,7 +476,8 @@ async fn handle_grant_storage_permission(
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }
@@ -470,7 +493,7 @@ async fn handle_grant_storage_permission(
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_grant_network_permission(
+pub async fn handle_grant_network_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -494,7 +517,7 @@ async fn handle_grant_network_permission(
     match result {
         Ok(()) => {
             let status_text = serde_json::to_string(&json!({
-                "status": "permission granted",
+                "status": "permission granted successfully",
                 "component_id": component_id,
                 "permission_type": "network",
                 "details": details
@@ -503,7 +526,8 @@ async fn handle_grant_network_permission(
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }
@@ -519,7 +543,7 @@ async fn handle_grant_network_permission(
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_grant_environment_variable_permission(
+pub async fn handle_grant_environment_variable_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -546,7 +570,7 @@ async fn handle_grant_environment_variable_permission(
     match result {
         Ok(()) => {
             let status_text = serde_json::to_string(&json!({
-                "status": "permission granted",
+                "status": "permission granted successfully",
                 "component_id": component_id,
                 "permission_type": "environment",
                 "details": details
@@ -555,7 +579,8 @@ async fn handle_grant_environment_variable_permission(
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }
@@ -571,7 +596,7 @@ async fn handle_grant_environment_variable_permission(
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_revoke_storage_permission(
+pub async fn handle_revoke_storage_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -603,7 +628,7 @@ async fn handle_revoke_storage_permission(
     match result {
         Ok(()) => {
             let status_text = serde_json::to_string(&json!({
-                "status": "storage permission revoked",
+                "status": "permission revoked successfully",
                 "component_id": component_id,
                 "uri": uri,
                 "message": "All access (read and write) to the specified URI has been revoked"
@@ -612,7 +637,8 @@ async fn handle_revoke_storage_permission(
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }
@@ -628,7 +654,7 @@ async fn handle_revoke_storage_permission(
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_revoke_network_permission(
+pub async fn handle_revoke_network_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -664,7 +690,8 @@ async fn handle_revoke_network_permission(
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }
@@ -680,7 +707,7 @@ async fn handle_revoke_network_permission(
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_revoke_environment_variable_permission(
+pub async fn handle_revoke_environment_variable_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -716,7 +743,8 @@ async fn handle_revoke_environment_variable_permission(
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }
@@ -732,7 +760,7 @@ async fn handle_revoke_environment_variable_permission(
 }
 
 #[instrument(skip(lifecycle_manager))]
-async fn handle_reset_permission(
+pub async fn handle_reset_permission(
     req: &CallToolRequestParam,
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
@@ -750,14 +778,15 @@ async fn handle_reset_permission(
     match result {
         Ok(()) => {
             let status_text = serde_json::to_string(&json!({
-                "status": "permissions reset",
+                "status": "permissions reset successfully",
                 "component_id": component_id
             }))?;
 
             let contents = vec![Content::text(status_text)];
 
             Ok(CallToolResult {
-                content: contents,
+                content: Some(contents),
+                structured_content: None,
                 is_error: None,
             })
         }

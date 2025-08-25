@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
@@ -11,7 +12,7 @@ use serde::{Deserialize, Serialize};
 /// Get the default component directory path based on the OS
 pub fn get_component_dir() -> Result<PathBuf, anyhow::Error> {
     let dir_strategy = etcetera::choose_base_strategy().context("Unable to get home directory")?;
-    Ok(dir_strategy.data_dir().join("wasette").join("components"))
+    Ok(dir_strategy.data_dir().join("wassette").join("components"))
 }
 
 fn default_plugin_dir() -> PathBuf {
@@ -27,13 +28,17 @@ pub struct Config {
     /// Directory where plugins are stored
     #[serde(default = "default_plugin_dir")]
     pub plugin_dir: PathBuf,
+
+    /// Environment variables to be made available to components
+    #[serde(default)]
+    pub environment_vars: HashMap<String, String>,
 }
 
 impl Config {
     /// Returns a new [`Config`] instance by merging the configuration from the specified
     /// `cli_config` (any struct that is Serialize/Deserialize, but generally a Clap `Parser`) with
     /// the configuration file and environment variables. By default, the configuration file is
-    /// located at `$XDG_CONFIG_HOME/wasette/config.toml`. This can be overridden by setting
+    /// located at `$XDG_CONFIG_HOME/wassette/config.toml`. This can be overridden by setting
     /// the `WASETTE_CONFIG_FILE` environment variable.
     ///
     /// The order of precedence for configuration sources is as follows:
@@ -46,7 +51,7 @@ impl Config {
             None => etcetera::choose_base_strategy()
                 .context("Unable to get home directory")?
                 .config_dir()
-                .join("wasette")
+                .join("wassette")
                 .join("config.toml"),
         };
         Self::new_from_path(cli_config, config_file_path)
@@ -63,6 +68,37 @@ impl Config {
             .admerge(Serialized::defaults(cli_config))
             .extract()
             .context("Unable to merge configs")
+    }
+
+    /// Creates a new config from a Serve struct that includes environment variable handling
+    pub fn from_serve(serve_config: &crate::Serve) -> Result<Self, anyhow::Error> {
+        // Start with the base config using existing logic
+        let mut config = Self::new(serve_config)?;
+
+        // Load environment variables from file if specified
+        if let Some(env_file) = &serve_config.env_file {
+            let file_env_vars = crate::load_env_file(env_file).with_context(|| {
+                format!("Failed to load environment file: {}", env_file.display())
+            })?;
+
+            // Merge file environment variables (they have lower precedence than CLI args)
+            for (key, value) in file_env_vars {
+                config.environment_vars.insert(key, value);
+            }
+        }
+
+        // Apply CLI environment variables (highest precedence)
+        for (key, value) in &serve_config.env_vars {
+            config.environment_vars.insert(key.clone(), value.clone());
+        }
+
+        // Also include system environment variables that aren't overridden
+        // This maintains backward compatibility
+        for (key, value) in std::env::vars() {
+            config.environment_vars.entry(key).or_insert(value);
+        }
+
+        Ok(config)
     }
 }
 
@@ -81,6 +117,8 @@ mod tests {
             stdio: true,
             sse: false,
             streamable_http: false,
+            env_vars: vec![],
+            env_file: None,
         }
     }
 
@@ -90,6 +128,8 @@ mod tests {
             stdio: false,
             sse: false,
             streamable_http: false,
+            env_vars: vec![],
+            env_file: None,
         }
     }
 
@@ -197,7 +237,7 @@ plugin_dir = "/config/plugin/dir"
     }
 
     #[test]
-    fn test_new_method_without_wasette_config_file_env() {
+    fn test_new_method_without_wassette_config_file_env() {
         // This test verifies that new() works when WASETTE_CONFIG_FILE is not set
         // It should try to use the default config location, which likely won't exist
         // but should still succeed with defaults
