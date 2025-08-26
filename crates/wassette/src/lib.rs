@@ -987,7 +987,7 @@ impl LifecycleManager {
         while let Some(entry) = entries.next_entry().await? {
             let self_clone = self.clone();
             let semaphore = semaphore.clone();
-            let notify_fn = notify_fn.as_ref().map(|f| std::sync::Arc::new(f));
+            let notify_fn = notify_fn.as_ref().map(std::sync::Arc::new);
 
             let future = async move {
                 let _permit = semaphore.acquire().await.unwrap();
