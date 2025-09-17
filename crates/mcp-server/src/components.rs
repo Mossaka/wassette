@@ -440,7 +440,7 @@ pub(crate) fn parse_tool_schema(tool_json: &Value) -> Option<Tool> {
     // object schema under a "result" property.
     let output_schema_arc = tool_json
         .get("outputSchema")
-        .and_then(|schema| normalize_output_schema(schema))
+        .and_then(normalize_output_schema)
         .and_then(|normalized| match normalized {
             Value::Object(map) => Some(Arc::new(map)),
             _ => None,
