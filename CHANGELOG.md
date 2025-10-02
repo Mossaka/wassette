@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- **Comprehensive Documentation Improvements**: Added extensive documentation following Diátaxis framework principles
+  - **Getting Started Tutorial**: Step-by-step guide for first-time users covering installation, configuration, and basic usage
+  - **Secret Management Guide**: Complete documentation for the secret management system including CLI commands, security best practices, and integration patterns
+  - **Troubleshooting Guide**: Comprehensive guide covering installation issues, component loading problems, permission errors, network issues, performance problems, and MCP client integration
+  - **Examples Catalog**: Organized overview of all available examples by language and functionality, including OCI registry paths, setup instructions, and usage examples
+  - Reorganized documentation structure with clear sections for Installation, User Guide, Development, and Design & Architecture
+  - Added `wassette component search` command documentation in CLI reference
 - **Component Discovery**: Added `search-components` tool that lists all known components available for loading from the component registry, making it easier for users to discover and load new WebAssembly tools ([#236](https://github.com/microsoft/wassette/pull/236))
 - Simple per-component secret management system with CLI commands `wassette secret list|set|delete <component-id>` ([#199](https://github.com/microsoft/wassette/pull/199))
   - Stores secrets in OS-appropriate directories with proper permissions (0700/user-only)
