@@ -2,9 +2,7 @@
 on:
   issues:
     types: [opened, reopened]
-permissions:
-  contents: read
-  issues: read
+permissions: read-all
 safe-outputs:
   add-labels:
 ---
