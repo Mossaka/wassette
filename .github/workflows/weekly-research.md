@@ -15,9 +15,6 @@ safe-outputs:
   create-issue:
     title-prefix: "${{ github.workflow }}"
 
-tools:
-  web-fetch: null
-
 timeout_minutes: 15
 
 ---
