@@ -3,13 +3,16 @@ on:
   issues:
     types: [opened, reopened]
 permissions: read-all
+tools:
+  github:
+  bash: [":*"]
 safe-outputs:
   add-labels:
 ---
 
 # label issue
 
-label the current issue on mossaka/wassette
+label the current issue on mossaka/wassette using the github mcp tools
 
 <!--
 ## TODO: Customize this workflow
