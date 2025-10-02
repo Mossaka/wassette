@@ -779,7 +779,7 @@ jobs:
           cat > $GITHUB_AW_PROMPT << 'EOF'
           # label issue
           
-          label the current issue on mossaka/wassette using the github mcp tools
+          label the current issue on mossaka/wassette using the github mcp tools. You should apply the label from the existing label list that makes the most sense. If you can't determine which issue to work on, apply label to the latest ones. 
           
           
           
