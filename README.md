@@ -379,6 +379,17 @@ You can join us via the `#wassette` channel on the [Microsoft Open Source Discor
 
 [![Microsoft Open Source Discord](https://dcbadge.limes.pink/api/server/microsoft-open-source)](https://discord.gg/microsoft-open-source)
 
+## Project Automation
+
+Wassette uses [GitHub Agentic Workflows](https://github.com/microsoft/wassette/blob/main/docs/agentic-workflows.md) - AI-powered automation that helps maintain and improve the project:
+
+- **Issue Triage**: Automatically labels new issues with appropriate categories
+- **Documentation Updates**: Keeps docs in sync with code changes
+- **Weekly Research**: Provides industry insights and competitive analysis
+- **Test Improvement**: Continuously enhances test coverage and quality
+
+Learn more about how these intelligent agents work in our [Agentic Workflows documentation](https://github.com/microsoft/wassette/blob/main/docs/agentic-workflows.md).
+
 ## Contributing
 
 Please see [CONTRIBUTING.md][Contributing] for more information on how to contribute to this project.
