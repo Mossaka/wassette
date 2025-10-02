@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Comprehensive documentation for secrets management system including usage guide, security considerations, and integration examples ([#XXX](https://github.com/microsoft/wassette/pull/XXX))
+  - New `docs/secrets.md` with detailed secrets management documentation
+  - Updated `docs/cli.md` with secrets command reference and workflow examples
+  - Updated `docs/SUMMARY.md` to include secrets documentation in navigation
+  - Added CLI capabilities overview in README with secrets management examples
 - **Component Discovery**: Added `search-components` tool that lists all known components available for loading from the component registry, making it easier for users to discover and load new WebAssembly tools ([#236](https://github.com/microsoft/wassette/pull/236))
 - Simple per-component secret management system with CLI commands `wassette secret list|set|delete <component-id>` ([#199](https://github.com/microsoft/wassette/pull/199))
   - Stores secrets in OS-appropriate directories with proper permissions (0700/user-only)
