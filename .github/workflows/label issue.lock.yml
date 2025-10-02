@@ -779,7 +779,7 @@ jobs:
           cat > $GITHUB_AW_PROMPT << 'EOF'
           # label issue
           
-          label the current issue
+          label the current issue on mossaka/wassette
           
           
           

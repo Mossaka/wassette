@@ -9,7 +9,7 @@ safe-outputs:
 
 # label issue
 
-label the current issue
+label the current issue on mossaka/wassette
 
 <!--
 ## TODO: Customize this workflow
