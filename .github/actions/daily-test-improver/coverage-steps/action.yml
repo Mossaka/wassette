@@ -1,0 +1,129 @@
+name: 'Daily Test Coverage Improver - Coverage Steps'
+description: 'Builds the project, runs tests, and generates coverage reports for the Daily Test Coverage Improver workflow'
+
+runs:
+  using: 'composite'
+  steps:
+    # Step 1: Install protobuf (required dependency)
+    - name: Install protobuf
+      shell: bash
+      run: |
+        echo "Installing protobuf..." | tee -a coverage-steps.log
+        ./scripts/install-protobuf.sh 2>&1 | tee -a coverage-steps.log
+        echo "✓ Protobuf installed" | tee -a coverage-steps.log
+
+    # Step 2: Setup Rust toolchain with nightly for coverage
+    - name: Setup Rust nightly toolchain
+      uses: actions-rust-lang/setup-rust-toolchain@02be93da58aa71fb456aa9c43b301149248829d8 # v1.15.1
+      with:
+        toolchain: nightly
+        components: llvm-tools-preview
+
+    # Step 3: Add wasm32-wasip2 target (required for test components)
+    - name: Add wasm32-wasip2 target
+      shell: bash
+      run: |
+        echo "Adding wasm32-wasip2 target..." | tee -a coverage-steps.log
+        rustup target add wasm32-wasip2 2>&1 | tee -a coverage-steps.log
+        echo "✓ wasm32-wasip2 target added" | tee -a coverage-steps.log
+
+    # Step 4: Setup Rust cache
+    - name: Setup Rust cache
+      uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+
+    # Step 5: Install cargo-llvm-cov for coverage generation
+    - name: Install cargo-llvm-cov
+      shell: bash
+      run: |
+        echo "Installing cargo-llvm-cov..." | tee -a coverage-steps.log
+        cargo install cargo-llvm-cov 2>&1 | tee -a coverage-steps.log
+        echo "✓ cargo-llvm-cov installed" | tee -a coverage-steps.log
+
+    # Step 6: Build the project
+    # This ensures all code compiles before running tests
+    - name: Build project
+      shell: bash
+      run: |
+        echo "Building project..." | tee -a coverage-steps.log
+        cargo build --workspace 2>&1 | tee -a coverage-steps.log
+        echo "✓ Project built successfully" | tee -a coverage-steps.log
+
+    # Step 7: Build test components
+    # Integration tests require pre-built Wasm components from examples/
+    - name: Build test components
+      shell: bash
+      run: |
+        echo "Building test components..." | tee -a coverage-steps.log
+        
+        # Clean component target directories to avoid permission issues
+        rm -rf examples/fetch-rs/target/ examples/filesystem-rs/target/ 2>&1 | tee -a coverage-steps.log
+        
+        # Build fetch-rs component
+        echo "Building fetch-rs component..." | tee -a coverage-steps.log
+        (cd examples/fetch-rs && cargo build --release --target wasm32-wasip2) 2>&1 | tee -a coverage-steps.log
+        
+        # Build filesystem-rs component
+        echo "Building filesystem-rs component..." | tee -a coverage-steps.log
+        (cd examples/filesystem-rs && cargo build --release --target wasm32-wasip2) 2>&1 | tee -a coverage-steps.log
+        
+        echo "✓ Test components built successfully" | tee -a coverage-steps.log
+
+    # Step 8: Generate coverage reports
+    # This runs all tests with coverage instrumentation and generates both lcov and JSON formats
+    # Coverage reports will be generated in the repository root:
+    #   - lcov.info: LCOV format for tools like Codecov
+    #   - coverage.json: JSON format with detailed line-by-line coverage data
+    - name: Generate coverage report
+      shell: bash
+      run: |
+        echo "Generating coverage reports..." | tee -a coverage-steps.log
+        
+        # Generate LCOV format coverage report
+        echo "Generating lcov.info..." | tee -a coverage-steps.log
+        cargo llvm-cov --all-features --workspace --ignore-run-fail --lcov --output-path lcov.info 2>&1 | tee -a coverage-steps.log
+        
+        # Generate JSON format coverage report with detailed information
+        echo "Generating coverage.json..." | tee -a coverage-steps.log
+        cargo llvm-cov --all-features --workspace --ignore-run-fail --json --output-path coverage.json 2>&1 | tee -a coverage-steps.log
+        
+        # Generate human-readable summary
+        echo "Coverage Summary:" | tee -a coverage-steps.log
+        cargo llvm-cov --all-features --workspace --ignore-run-fail --summary-only 2>&1 | tee -a coverage-steps.log
+        
+        echo "✓ Coverage reports generated successfully" | tee -a coverage-steps.log
+        echo "  - lcov.info: LCOV format coverage report" | tee -a coverage-steps.log
+        echo "  - coverage.json: JSON format coverage report with detailed data" | tee -a coverage-steps.log
+
+    # Step 9: Upload coverage reports as artifacts
+    # The coverage reports can be downloaded and analyzed after the workflow completes
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: coverage
+        path: |
+          lcov.info
+          coverage.json
+          coverage-steps.log
+
+    # Step 10: Display coverage summary
+    - name: Display coverage summary
+      shell: bash
+      run: |
+        echo "========================================" | tee -a coverage-steps.log
+        echo "Coverage Reports Generated Successfully" | tee -a coverage-steps.log
+        echo "========================================" | tee -a coverage-steps.log
+        echo "" | tee -a coverage-steps.log
+        echo "Available artifacts:" | tee -a coverage-steps.log
+        echo "  - lcov.info: LCOV format (for Codecov, IDE plugins)" | tee -a coverage-steps.log
+        echo "  - coverage.json: JSON format (for detailed analysis)" | tee -a coverage-steps.log
+        echo "  - coverage-steps.log: This log file" | tee -a coverage-steps.log
+        echo "" | tee -a coverage-steps.log
+        
+        # Extract and display key metrics from coverage.json
+        if [ -f coverage.json ]; then
+          echo "Extracting coverage metrics..." | tee -a coverage-steps.log
+          # This will be parsed by the Daily Test Coverage Improver
+          echo "Coverage data available in coverage.json" | tee -a coverage-steps.log
+        fi
+        
+        echo "✓ All coverage steps completed successfully" | tee -a coverage-steps.log
