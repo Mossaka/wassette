@@ -335,6 +335,32 @@ When an existing component is replaced, the `status` value becomes
 
 These tools enable you to dynamically manage components and their security permissions without needing to restart the server or modify configuration files directly.
 
+### CLI Management Commands
+
+In addition to the MCP tools above, Wassette provides a comprehensive command-line interface for direct management of components, permissions, and secrets:
+
+```bash
+# Component management
+wassette component load oci://ghcr.io/example/tool:latest
+wassette component unload <component-id>
+wassette component list
+
+# Permission management
+wassette permission grant storage <id> fs:///path --access read,write
+wassette permission grant network <id> api.example.com
+wassette permission revoke storage <id> fs:///path
+wassette permission reset <id>
+
+# Secrets management (secure storage for API keys, tokens, etc.)
+wassette secret set <id> API_KEY=value
+wassette secret list <id>
+wassette secret delete <id> API_KEY
+```
+
+For complete CLI documentation, see the [CLI Reference](https://microsoft.github.io/wassette/cli.html).
+
+For secrets management documentation, see the [Secrets Management Guide](https://microsoft.github.io/wassette/secrets.html).
+
 ## Building WebAssembly Components
 
 Wasm Components provide fully typed interfaces defined using WebAssembly

@@ -47,10 +47,14 @@ wassette
 │   └── list       # Show loaded components
 ├── policy         # Policy information
 │   └── get        # Retrieve component policies
-└── permission     # Permission management
-    ├── grant      # Add permissions
-    ├── revoke     # Remove permissions
-    └── reset      # Clear all permissions
+├── permission     # Permission management
+│   ├── grant      # Add permissions
+│   ├── revoke     # Remove permissions
+│   └── reset      # Clear all permissions
+└── secret         # Secrets management
+    ├── list       # View component secrets
+    ├── set        # Add or update secrets
+    └── delete     # Remove secrets
 ```
 
 ## Server Commands
@@ -322,6 +326,97 @@ wassette permission reset my-component --plugin-dir /custom/components
 **Options:**
 - `--plugin-dir <PATH>`: Component storage directory
 
+## Secrets Management
+
+Wassette provides a secure, per-component secrets management system for storing sensitive configuration data like API keys, tokens, and passwords. For comprehensive documentation, see the [Secrets Management Guide](./secrets.md).
+
+### `wassette secret list`
+
+List secret keys for a component (values are hidden by default for security):
+
+```bash
+# List secret keys only (secure default)
+wassette secret list <component-id>
+
+# Show secret values (prompts for confirmation)
+wassette secret list <component-id> --show-values
+
+# Skip confirmation prompt
+wassette secret list <component-id> --show-values --yes
+
+# Use custom plugin directory
+wassette secret list <component-id> --plugin-dir /custom/components
+
+# Output in different format
+wassette secret list <component-id> -o json
+wassette secret list <component-id> -o yaml
+```
+
+**Example output (keys only):**
+```json
+{
+  "status": "success",
+  "component_id": "weather-component",
+  "secret_keys": ["API_KEY", "ENDPOINT_URL"]
+}
+```
+
+**Options:**
+- `--show-values`: Display secret values (prompts for confirmation)
+- `--yes`: Skip confirmation prompt when showing values
+- `--plugin-dir <PATH>`: Component storage directory
+- `-o, --output-format <FORMAT>`: Output format (json, yaml, table)
+
+### `wassette secret set`
+
+Add or update secrets for a component:
+
+```bash
+# Set a single secret
+wassette secret set <component-id> API_KEY=sk_live_abc123
+
+# Set multiple secrets at once
+wassette secret set <component-id> \
+    API_KEY=sk_live_abc123 \
+    ENDPOINT_URL=https://api.example.com \
+    DEBUG_MODE=false
+
+# Use custom plugin directory
+wassette secret set <component-id> API_KEY=value --plugin-dir /custom/components
+```
+
+**Notes:**
+- Secrets are stored in `$XDG_DATA_HOME/wassette/secrets/{component-id}.secrets.yaml`
+- Files are created with restricted permissions (0600 on Unix-like systems)
+- If a secret already exists, it will be updated
+- No server restart is required
+
+**Options:**
+- `--plugin-dir <PATH>`: Component storage directory
+
+### `wassette secret delete`
+
+Remove specific secrets from a component:
+
+```bash
+# Delete a single secret
+wassette secret delete <component-id> API_KEY
+
+# Delete multiple secrets
+wassette secret delete <component-id> API_KEY ENDPOINT_URL DEBUG_MODE
+
+# Use custom plugin directory
+wassette secret delete <component-id> API_KEY --plugin-dir /custom/components
+```
+
+**Notes:**
+- Only specified keys are removed
+- Non-existent keys are silently ignored
+- The secrets file is preserved (even if empty)
+
+**Options:**
+- `--plugin-dir <PATH>`: Component storage directory
+
 ## Common Workflows
 
 ### Local Development
@@ -371,6 +466,49 @@ for component in $(wassette component list | jq -r '.components[].id'); do
   echo "=== $component ==="
   wassette policy get $component --output-format yaml
 done
+```
+
+### Working with Secrets
+
+```bash
+# 1. Load a component that needs API access
+wassette component load oci://ghcr.io/example/api-client:latest
+
+# 2. Set required secrets
+wassette secret set api-client-abc123 \
+    API_KEY=sk_live_abc123 \
+    API_ENDPOINT=https://api.example.com
+
+# 3. Verify secrets were set (without showing values)
+wassette secret list api-client-abc123
+
+# 4. Grant permission to access the environment variables
+wassette permission grant environment-variable api-client-abc123 API_KEY
+wassette permission grant environment-variable api-client-abc123 API_ENDPOINT
+
+# 5. Start server - component can now access secrets
+wassette serve --stdio
+```
+
+**Rotating secrets:**
+```bash
+# Update an existing secret
+wassette secret set weather-component API_KEY=sk_live_new_key_xyz
+
+# Verify update (prompts for confirmation before showing values)
+wassette secret list weather-component --show-values
+```
+
+**Cleaning up secrets:**
+```bash
+# Remove specific secrets
+wassette secret delete old-component API_KEY DATABASE_URL
+
+# Verify deletion
+wassette secret list old-component
+
+# Unload the component if no longer needed
+wassette component unload old-component
 ```
 
 ### Cleanup Operations
