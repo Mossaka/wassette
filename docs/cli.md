@@ -129,6 +129,58 @@ wassette component unload my-component-id --plugin-dir /custom/components
 
 Display all currently loaded components.
 
+### `wassette component search`
+
+Search and discover available components from the component registry. This command lists all known components that can be fetched and loaded from the registry, making it easy to discover new WebAssembly tools.
+
+**Basic usage:**
+```bash
+# List all available components
+wassette component search
+```
+
+**Example output:**
+```json
+{
+  "status": "Component list found",
+  "components": [
+    {
+      "name": "Weather Server",
+      "description": "A weather component written in JavaScript",
+      "uri": "oci://ghcr.io/microsoft/get-weather-js:latest"
+    },
+    {
+      "name": "Time Server",
+      "description": "A time server component written in JavaScript",
+      "uri": "oci://ghcr.io/microsoft/time-server-js:latest"
+    },
+    {
+      "name": "File System Operations",
+      "description": "File system operations component written in Rust",
+      "uri": "oci://ghcr.io/microsoft/filesystem-rs:latest"
+    }
+  ]
+}
+```
+
+**Output formats:**
+```bash
+# Pretty JSON (default)
+wassette component search
+
+# YAML format
+wassette component search --output-format yaml
+
+# Table format
+wassette component search --output-format table
+```
+
+This command queries the component registry to help users discover and load new tools without needing to know the exact OCI paths.
+
+### `wassette component list`
+
+Display all currently loaded components.
+
 **Basic JSON output:**
 ```bash
 wassette component list
