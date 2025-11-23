@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Comprehensive development guide in `docs/development.md` covering setup, building, testing, debugging, and contribution workflows
+- Documentation for GitHub Agentic Workflows in `docs/agentic-workflows.md`, explaining the autonomous AI-powered workflows used for repository maintenance, testing, and documentation
+- Updated documentation navigation structure in `SUMMARY.md` with new Development and Repository Automation sections
 - **Component Discovery**: Added `search-components` tool that lists all known components available for loading from the component registry, making it easier for users to discover and load new WebAssembly tools ([#236](https://github.com/microsoft/wassette/pull/236))
 - Simple per-component secret management system with CLI commands `wassette secret list|set|delete <component-id>` ([#199](https://github.com/microsoft/wassette/pull/199))
   - Stores secrets in OS-appropriate directories with proper permissions (0700/user-only)
