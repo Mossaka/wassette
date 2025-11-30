@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- **Documentation Enhancement**: Added comprehensive documentation structure with new guides ([#DRAFT](https://github.com/microsoft/wassette/pull/DRAFT))
+  - Created `installation.md` with unified installation guide covering all platforms and methods
+  - Created `getting-started.md` with step-by-step tutorial for first-time users
+  - Created `examples.md` showcasing all example components with usage patterns and language support matrix
+  - Created `development.md` with complete development setup guide for contributors
+  - Updated `SUMMARY.md` to include Development Guides section and reorganized navigation
+  - Linked all development language guides (Rust, JavaScript, Python, Go) in the main navigation
+
 - **Component Discovery**: Added `search-components` tool that lists all known components available for loading from the component registry, making it easier for users to discover and load new WebAssembly tools ([#236](https://github.com/microsoft/wassette/pull/236))
 - Simple per-component secret management system with CLI commands `wassette secret list|set|delete <component-id>` ([#199](https://github.com/microsoft/wassette/pull/199))
   - Stores secrets in OS-appropriate directories with proper permissions (0700/user-only)
